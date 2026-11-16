@@ -52,6 +52,120 @@ If `x` doesn't exist yet, a new object is created; it `x` does exist, its value 
 crab_data <- data(pie_crab)
 ```
 
+
+Our data comes from 13 different marshes along the east coast of the United States of America.
+
+```{r}
+#| message: false
+library(sf)
+library(ggspatial)
+
+## uses method from wesleygreentree on github 
+
+#custom theme
+theme_map <- function(){
+  theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.title = element_blank(),
+          axis.text = element_text(size = 11))
+}
+
+
+#load world map data
+countries <- read_sf("~/hdrive/other/provinces/ne_50m_admin_1_states_provinces.shp")
+st_crs(countries)
+
+countries <- st_transform(countries, crs = 4326)
+
+sf_use_s2(FALSE)
+countries <- st_crop(countries, xmin = -100, xmax = -45, ymin = 15, ymax = 70)
+
+
+data(pie_crab)
+
+pie_crab <- pie_crab %>% 
+  mutate(longitude = case_when(
+    latitude == 30.0 ~ -81.3,
+    latitude == 31.4 ~ -81.4,
+    latitude == 33.3 ~ -79.2,
+    latitude == 34.0 ~ -77.9,
+    latitude == 34.7 ~ -76.9,
+    latitude == 37.2 ~ -75.9,
+    latitude == 39.1 ~ -75.4,
+    latitude == 39.6 ~ -74.3,
+    latitude == 41.3 ~ -72.0,
+    latitude == 41.6 ~ -71.3,
+    latitude == 41.9 ~ -70.1,
+    latitude == 42.2 ~ -70.9,
+    latitude == 42.7 ~ 70.8
+  ))
+
+crab_sites <- pie_crab %>% 
+  group_by(site) %>% 
+  summarise(latitude = mean(latitude),
+            longitude = mean(longitude),
+            mean_size = mean(size))
+
+sites_sf_adj <- st_as_sf(crab_sites, coords = c("longitude", "latitude"), crs = 4326)
+```
+
+```{r}
+#| label: fig-map
+#| message: false
+#| out-width: 100%
+#| fig-cap: "Study area and sampling locations. Approximately 30 male Minuca pugnax fiddler crabs were collected and measured from each of the 13 marshes, locations are indicated with a blue point. Abbreviated site names appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys."
+ggplot() +
+  geom_sf(data = countries) +
+  geom_sf(data = sites_sf_adj, size = 2, shape = 21, fill = "firebrick3", color = "black", stroke = 0.4) +
+  coord_sf(crs = st_crs(32618),
+    xlim = c(-90, -65),
+    ylim = c(25, 45),
+    default_crs = st_crs(4326),
+    expand = FALSE) +
+  geom_sf_text(data = filter(sites_sf_adj, !site %in% c("BC", "CT", "NB")),
+    aes(label = site),
+    size = 4,
+    hjust = 0,
+    colour = "grey20",
+    nudge_x = 0.25,
+    nudge_y = -0.25) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "BC"),
+    aes(label = site),
+    size = 4,
+    colour = "grey20",
+    nudge_x = 1,
+    nudge_y = 0.25) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "CT"),
+    aes(label = site),
+    size = 4,
+    colour = "grey20",
+    nudge_x = 0.5,
+    nudge_y = -0.7) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "NB"),
+    aes(label = site),
+    size = 4,
+    colour = "grey20",
+    nudge_x = 0.9,
+    nudge_y = -0.4) +
+  annotate(geom = "text",
+           x = -71, y = 30,
+           label = "Atlantic Ocean",
+           fontface = "italic",
+           size = 5, colour = "grey20") +
+  annotate(geom = "text",
+           x = -86, y = 27,
+           label = "Gulf of\nMexico",
+           fontface = "italic",
+           size = 3, colour = "grey20") +
+  annotation_scale(width_hint = 0.35, style = "bar", location = "tl") +
+  annotation_north_arrow(location = "br",
+                         height = unit(0.9, "cm"), width = unit(0.6, "cm"),
+                         which_north = "true") +
+  theme_map()
+```
+
+
 Here is the raw data, showing 50 rows of the 392 total. We have columns date in the format YYYY-MM-DD, latitude, site (which is an abbreviated sample location), size (which is carapace size in millimeters), air_temp and air_temp_sd (the air temperature and it's standard deviation in Celsius), water_temp and water_temp_df (the water temperature and it's standard deviation), and name (full site name).
 
 :::{.callout-tip collapse="false"}
@@ -84,8 +198,9 @@ Here is a function with a single argument, r
 ```{r}
 #| echo: true
 circumference <- function(r) {
-  #Function body: what the function does to input x
+  # Function body: what the function does to input r
   2*pi*r
+  # this function multiples 2 by pi by r to get the circumference
 }
 
 circumference(2)
@@ -95,7 +210,9 @@ Here is a function with multiple arguments, x and y
 ```{r}
 #| echo: true
 subtract_two_nums <- function(x, y){
+  # Function body: what the function does to inputs x and y
   x - y
+  # this function subtracts y from x
 }
 
 subtract_two_nums(3, 1)
@@ -686,13 +803,10 @@ ggplot(data = crab_data,
   geom_jitter(color = "grey50", alpha = 0.5) + 
   stat_summary(fun = mean, geom = "point",
                color = 'grey30', size = 3) +
-  geom_smooth(formula = y~x, method = "lm",
-              color = "black") +
-  labs(x = "Latitude", y = "Carapace size (mm)") +
-  theme_classic()
+  labs(x = "Latitude", y = "Carapace size (mm)") 
 ```
 
-Note how `geom_point(crab_summary, ...)` was replaced with `stat_summary(fun = mean, geom = "point")` but the resulting figure is the same!
+Note how `geom_point(crab_summary, ...)` was replaced with `stat_summary(fun = mean, geom = "point") but the mean points would still be the same!
 :::
 
 Now that you have created a plot, we can see that body size does indeed increase with latitude. This shows that the data follows the predictions posed by Bergmann's Rule.
@@ -746,5 +860,61 @@ ggplot(data = pie_crab,
               color = "black") +
   labs(x = "Latitude", y = "Carapace size (mm)") +
   theme_classic()
+```
+
+We can plot our mean sizes alongside the site label on our map to see that as we go further north, crabs become larger
+
+```{r}
+sites_sf_adj <- sites_sf_adj %>% 
+  mutate(site_label = paste0(site, ": ", round(mean_size, 1)))
+
+ggplot() +
+  geom_sf(data = countries) +
+  geom_sf(data = sites_sf_adj, size = 2, shape = 21, fill = "firebrick3", color = "black", stroke = 0.4) +
+  coord_sf(crs = st_crs(32618),
+    xlim = c(-90, -65),
+    ylim = c(25, 45),
+    default_crs = st_crs(4326),
+    expand = FALSE) +
+  geom_sf_text(data = filter(sites_sf_adj, !site %in% c("BC", "CT", "NB")),
+    aes(label = site_label),
+    size = 4,
+    hjust = 0,
+    colour = "grey20",
+    nudge_x = 0.25,
+    nudge_y = -0.25) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "BC"),
+    aes(label = site_label),
+    size = 4,
+    colour = "grey20",
+    nudge_x = 1.2,
+    nudge_y = 0.5) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "CT"),
+    aes(label = site_label),
+    size = 4,
+    colour = "grey20",
+    nudge_x = 0.5,
+    nudge_y = -0.7) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "NB"),
+    aes(label = site_label),
+    size = 4,
+    colour = "grey20",
+    nudge_x = 0.9,
+    nudge_y = -0.4) +
+  annotate(geom = "text",
+           x = -71, y = 30,
+           label = "Atlantic Ocean",
+           fontface = "italic",
+           size = 5, colour = "grey20") +
+  annotate(geom = "text",
+           x = -86, y = 27,
+           label = "Gulf of\nMexico",
+           fontface = "italic",
+           size = 3, colour = "grey20") +
+  annotation_scale(width_hint = 0.35, style = "bar", location = "tl") +
+  annotation_north_arrow(location = "br",
+                         height = unit(0.9, "cm"), width = unit(0.6, "cm"),
+                         which_north = "true") +
+  theme_map()
 ```
 
