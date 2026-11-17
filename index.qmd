@@ -9,6 +9,8 @@ execute:
 source("R/helpers.R")
 library(lterdatasampler)
 library(kableExtra)
+library(sf)
+library(ggspatial)
 data(pie_crab)
 ```
 
@@ -49,7 +51,8 @@ If `x` doesn't exist yet, a new object is created; it `x` does exist, its value 
 
 ```{r load_data}
 #| echo: true
-crab_data <- data(pie_crab)
+data(pie_crab) # load the data
+crab_data <- pie_crab # rename the data
 ```
 
 
@@ -57,9 +60,6 @@ Our data comes from 13 different marshes along the east coast of the United Stat
 
 ```{r}
 #| message: false
-library(sf)
-library(ggspatial)
-
 ## uses method from wesleygreentree on github 
 
 #custom theme
@@ -73,8 +73,8 @@ theme_map <- function(){
 
 
 #load world map data
-countries <- read_sf("~/hdrive/other/provinces/ne_50m_admin_1_states_provinces.shp")
-st_crs(countries)
+countries <- read_sf("/mnt/nas/Lynndsay/tidyverse-visualized/provinces/ne_50m_admin_1_states_provinces.shp")
+# st_crs(countries)
 
 countries <- st_transform(countries, crs = 4326)
 
@@ -84,7 +84,7 @@ countries <- st_crop(countries, xmin = -100, xmax = -45, ymin = 15, ymax = 70)
 
 data(pie_crab)
 
-pie_crab <- pie_crab %>% 
+crab_site_data <- pie_crab %>% 
   mutate(longitude = case_when(
     latitude == 30.0 ~ -81.3,
     latitude == 31.4 ~ -81.4,
@@ -101,7 +101,7 @@ pie_crab <- pie_crab %>%
     latitude == 42.7 ~ 70.8
   ))
 
-crab_sites <- pie_crab %>% 
+crab_sites <- crab_site_data %>% 
   group_by(site) %>% 
   summarise(latitude = mean(latitude),
             longitude = mean(longitude),
@@ -815,56 +815,15 @@ Now that you have created a plot, we can see that body size does indeed increase
 
 You also now know how to conduct a simple analysis using the `dplyr` and `ggplot2` functions. The beauty of `tidyverse` packages in R is that they follow an English type grammar structure, so instead of thinking purely in code, you can think about what you want to do to your data and translate that into functions. 
 
-A full workflow for this kind of analysis is shared below.
+A full workflow for this kind of analysis is shared [here](full_workflow.qmd)
+
+We can plot our mean sizes alongside the site label on our map to see that as we go further north, crabs generally become larger.
 
 ```{r}
-#| echo: true
-#| label: tbl-summ
-#| tbl-cap: "Summary statistics for fiddler crab carapace size, measured in milllimetres (mm) for 392 crabs across 13 different sites."
-
-# load libraries
-library(lterdatasampler)
-library(dplyr)
-library(ggplot2)
-library(knitr) # for pretty tables
-
-# load data 
-data(pie_crab)
-
-# create summary table
-summ_tble <- pie_crab %>% 
-  select(site, size, latitude) %>% 
-  group_by(site) %>% 
-  summarise(mean_size = mean(size), 
-            latitude = unique(latitude),
-            sd_size = sd(size)) 
-
-# make the table print with a caption
-summ_tble %>% 
-  kable()
-```
-```{r}
-#| echo: true
-#| label: fig-plot2
-#| fig-cap: "Fiddler crab carapace size (mm) in relation to latitude. Light grey points represent individual observations, while black larger points show mean values for sample sites. Smooth shows positive relationship between carapace size and latitude."
-
-
-# plot it!
-ggplot(data = pie_crab, 
-       aes(x = latitude, y = size)) + 
-  geom_jitter(color = "grey50", alpha = 0.5) + 
-  geom_point(data = summ_tble, 
-             aes(x = latitude, y = mean_size), 
-             color = "grey30", size = 3) + 
-  geom_smooth(formula = y~x, method = "lm",
-              color = "black") +
-  labs(x = "Latitude", y = "Carapace size (mm)") +
-  theme_classic()
-```
-
-We can plot our mean sizes alongside the site label on our map to see that as we go further north, crabs become larger
-
-```{r}
+#| label: fig-map2
+#| message: false
+#| out-width: 100%
+#| fig-cap: "Study area and sampling locations. Approximately 30 male Minuca pugnax fiddler crabs were collected and measured from each of the 13 marshes, locations are indicated with a blue point. Abbreviated site names and mean carapace size (mm) appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys."
 sites_sf_adj <- sites_sf_adj %>% 
   mutate(site_label = paste0(site, ": ", round(mean_size, 1)))
 
