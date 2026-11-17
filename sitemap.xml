@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lynndsayt.github.io/tidyverse-visualized/index.html</loc>
-    <lastmod>2026-11-16T20:40:11.491Z</lastmod>
+    <loc>https://lynndsayt.github.io/tidyverse-visualized/sources.html</loc>
+    <lastmod>2026-11-17T20:28:02.151Z</lastmod>
   </url>
   <url>
-    <loc>https://lynndsayt.github.io/tidyverse-visualized/sources.html</loc>
-    <lastmod>2026-11-16T19:15:23.971Z</lastmod>
+    <loc>https://lynndsayt.github.io/tidyverse-visualized/index.html</loc>
+    <lastmod>2026-11-17T22:00:49.738Z</lastmod>
+  </url>
+  <url>
+    <loc>https://lynndsayt.github.io/tidyverse-visualized/full_workflow.html</loc>
+    <lastmod>2026-11-17T20:39:32.693Z</lastmod>
   </url>
 </urlset>
