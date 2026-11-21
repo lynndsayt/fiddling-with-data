@@ -40,3 +40,21 @@
   padding-left: 2em;
   text-indent: -2em;
 }
+
+.feedback {
+  margin: 8px 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-weight: 600;
+}
+.feedback.good {
+  background: #d1fae5;
+  color: #065f46;
+  animation: pop 0.3s ease;
+}
+@keyframes pop {
+  0%   { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
