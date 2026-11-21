@@ -14,11 +14,11 @@ library(ggspatial)
 data(pie_crab)
 ```
 
-To learn about the functions of the tidyverse, we will explore a dataset from the Long Term Ecological Research program Network. This data describes the body size of Fiddler crabs in salt marshes from Florida to Massachusetts during the summer of 2016. You can read more about this data [here](https://lter.github.io/lterdatasampler/articles/pie_crab_vignette.html)
+To learn about the functions of the tidyverse, we will explore a dataset from the Long Term Ecological Research program Network. This data describes the body size of fiddler crabs in salt marshes from Florida to Massachusetts during the summer of 2016. You can read more about this data [here](https://lter.github.io/lterdatasampler/articles/pie_crab_vignette.html)
 
 Climate change has caused this species to expand its range northward in response to ocean warming. As a result, we can use this data to observe Bergmann's Rule in action. Bergmann's Rule predicts that organisms at higher latitudes (more north) will have larger body sizes. 
 
-Let's start exploring the data using R and RStudio to see if the sampled Fiddler crabs follow this prediction. 
+Let's start exploring the data using R and RStudio to see if the sampled fiddler crabs follow this prediction. 
 
 ### Exploring the Data
 
@@ -27,7 +27,7 @@ We will need to start by installing the packages needed for these evaluations. W
 ```{r install_packages}
 #| eval: false
 #| echo: true
-install.packages(c("lterdatasampler", "ggplot2", "dplyr"))
+install.packages(c("dplyr", "ggplot2", "lterdatasampler"))
 ```
 
 Now that our packages are installed, we need to load them into our R session. We can do this using the `library()` function, as shown below. This only needs to be done once per session. 
@@ -60,6 +60,7 @@ Our data comes from 13 different marshes along the east coast of the United Stat
 
 ```{r}
 #| message: false
+#| warnings: false
 ## uses method from wesleygreentree on github 
 
 #custom theme
@@ -80,7 +81,7 @@ countries <- st_transform(countries, crs = 4326)
 
 sf_use_s2(FALSE)
 countries <- st_crop(countries, xmin = -100, xmax = -45, ymin = 15, ymax = 70)
-
+sf_use_s2(TRUE)
 
 data(pie_crab)
 
@@ -312,7 +313,7 @@ crab_data <- pie_crab %>%
   select(!name)
 
 site_options_filt <- c("any", sort(unique(as.character(crab_data$site))))
-size_options_filt <- c(0, 15, 20, 25)
+size_options_filt <- seq(1, 25, 1)
 
 choices_filt <- expand.grid(
   site = site_options_filt,
@@ -353,7 +354,8 @@ viewof site_filt = Inputs.select(site_options_filt, {label: "Site"})
 ```
 
 ```{ojs filter_func_input2}
-viewof min_size_filt = Inputs.select(size_options_filt, {label: "Minimum size"})
+viewof min_size_filt = Inputs.range([d3.min(size_options_filt), d3.max(size_options_filt)], 
+{label: "Minimum size", step: 1, value: d3.min(site_options_filt)})
 ```
 
 ```{ojs filter_func_input3}
@@ -829,24 +831,25 @@ sites_sf_adj <- sites_sf_adj %>%
 
 ggplot() +
   geom_sf(data = countries) +
-  geom_sf(data = sites_sf_adj, size = 2, shape = 21, fill = "firebrick3", color = "black", stroke = 0.4) +
+  geom_sf(data = sites_sf_adj, aes(fill = mean_size), size = 2, shape = 21, stroke = 0.4) +
+  scale_fill_viridis_c(option = "magma") +
   coord_sf(crs = st_crs(32618),
     xlim = c(-90, -65),
     ylim = c(25, 45),
     default_crs = st_crs(4326),
     expand = FALSE) +
-  geom_sf_text(data = filter(sites_sf_adj, !site %in% c("BC", "CT", "NB")),
+  geom_sf_text(data = filter(sites_sf_adj, !site %in% c("BC", "CT", "NB", "DB")),
     aes(label = site_label),
     size = 4,
     hjust = 0,
     colour = "grey20",
-    nudge_x = 0.25,
-    nudge_y = -0.25) +
+    nudge_x = 0.5,
+    nudge_y = 0) +
   geom_sf_text(data = filter(sites_sf_adj, site == "BC"),
     aes(label = site_label),
     size = 4,
     colour = "grey20",
-    nudge_x = 1.2,
+    nudge_x = 2.25,
     nudge_y = 0.5) +
   geom_sf_text(data = filter(sites_sf_adj, site == "CT"),
     aes(label = site_label),
@@ -858,8 +861,15 @@ ggplot() +
     aes(label = site_label),
     size = 4,
     colour = "grey20",
-    nudge_x = 0.9,
+    nudge_x = 2.25,
     nudge_y = -0.4) +
+  geom_sf_text(data = filter(sites_sf_adj, site == "DB"),
+    aes(label = site_label),
+    size = 4,
+    hjust = 0,
+    colour = "grey20",
+    nudge_x = 0.5,
+    nudge_y = -0.5) +
   annotate(geom = "text",
            x = -71, y = 30,
            label = "Atlantic Ocean",
