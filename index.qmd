@@ -2,6 +2,7 @@
 title: "Visualizing R"
 execute:
   echo: false
+  freeze: auto
 ---
 
 ```{r source}
@@ -313,7 +314,7 @@ crab_data <- pie_crab %>%
   select(!name)
 
 site_options_filt <- c("any", sort(unique(as.character(crab_data$site))))
-size_options_filt <- seq(1, 25, 1)
+size_options_filt <- seq(7, 20, 1)
 
 choices_filt <- expand.grid(
   site = site_options_filt,
