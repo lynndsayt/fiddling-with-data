@@ -58,3 +58,33 @@
   0%   { transform: scale(0.9); opacity: 0; }
   100% { transform: scale(1);   opacity: 1; }
 }
+
+.table-scroll {
+  max-height: 280px;      /* change to taste */
+  overflow: auto;         /* scrolls both ways when needed */
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.hl-table {
+  font-size: 0.8em;       /* smaller text */
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.hl-table th,
+.hl-table td {
+  padding: 2px 8px;       /* tighter cells */
+  white-space: nowrap;    /* wide tables scroll sideways instead of wrapping */
+}
+
+.hl-table thead th {
+  position: sticky;       /* header stays visible while scrolling */
+  top: 0;
+  background: #f9fafb;
+}
+
+.side-by-side > div {
+  flex: 1;
+  min-width: 0;           /* lets each side shrink so its own box can scroll */
+}
