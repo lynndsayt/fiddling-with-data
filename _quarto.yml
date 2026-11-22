@@ -1,8 +1,10 @@
 project:
   type: website
+  resources:
+    - "plots/*.png"
 
 website:
-  title: "Visualizing R"
+  title: "Fiddling with Data"
   navbar:
    left:
       - href: index.qmd
@@ -16,6 +18,8 @@ website:
         href: https://github.com/lynndsayt
       - icon: linkedin
         href: https://www.linkedin.com/in/lynndsay-terpsma/
+      - icon: person-fill
+        href: https://lynndsayt.ca
    search: false
 format:
   html:

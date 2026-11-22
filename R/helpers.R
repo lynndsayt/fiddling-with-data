@@ -23,6 +23,7 @@ html_table <- function(df, row_class = "", col_class = "") {
     cells <- paste0("<td class='", col_class, "'>", values, "</td>", collapse = "")
     paste0("<tr class='", row_class[i], "'>", cells, "</tr>")
   }, character(1))
-  paste0("<table class='hl-table'><thead><tr>", head, "</tr></thead><tbody>",
-         paste(body, collapse = ""), "</tbody></table>")
+  paste0("<div class='table-scroll'><table class='hl-table'><thead><tr>", head,
+         "</tr></thead><tbody>", paste(body, collapse = ""),
+         "</tbody></table></div>")
 }

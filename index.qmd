@@ -1,5 +1,5 @@
 ---
-title: "Visualizing R"
+title: "Fiddlilng with Data"
 execute:
   echo: false
   freeze: auto
@@ -15,13 +15,19 @@ library(ggspatial)
 data(pie_crab)
 ```
 
-To learn about the functions of the tidyverse, we will explore a dataset from the Long Term Ecological Research program Network. This data describes the body size of fiddler crabs in salt marshes from Florida to Massachusetts during the summer of 2016. You can read more about this data [here](https://lter.github.io/lterdatasampler/articles/pie_crab_vignette.html)
+To learn about the functions of R and the tidyverse, we will explore a dataset from the Long Term Ecological Research program Network. This data describes the body size of fiddler crabs (*Minuca pugnax*) in salt marshes from Florida to Massachusetts during the summer of 2016. You can read more about this data [here](https://lter.github.io/lterdatasampler/articles/pie_crab_vignette.html)
+
+![Fiddler crabs (*Minuca pugnax*). Photo credit: Hannah Floyd on iNaturalist (2023).](figures/crabs.jpeg){#fig-crabs}
+
+:::{.callout-note collapse="false"}
+The tidyverse is a collection of R packages designed to make data science more intuitive. It using grammar-like structure and is built around tidy data. Read more about it [here](https://tidyverse.org/)
+:::
 
 Climate change has caused this species to expand its range northward in response to ocean warming. As a result, we can use this data to observe Bergmann's Rule in action. Bergmann's Rule predicts that organisms at higher latitudes (more north) will have larger body sizes. 
 
 Let's start exploring the data using R and RStudio to see if the sampled fiddler crabs follow this prediction. 
 
-### Exploring the Data
+## Exploring the Data
 
 We will need to start by installing the packages needed for these evaluations. We can do that with the `install.packages()` function. This may take a while, but don't worry, once you've installed the packages on your computer once, you won't need to do it again. 
 
@@ -59,113 +65,8 @@ crab_data <- pie_crab # rename the data
 
 Our data comes from 13 different marshes along the east coast of the United States of America.
 
-```{r}
-#| message: false
-#| warnings: false
-## uses method from wesleygreentree on github 
 
-#custom theme
-theme_map <- function(){
-  theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.title = element_blank(),
-          axis.text = element_text(size = 11))
-}
-
-
-#load world map data
-countries <- read_sf("/mnt/nas/Lynndsay/tidyverse-visualized/provinces/ne_50m_admin_1_states_provinces.shp")
-# st_crs(countries)
-
-countries <- st_transform(countries, crs = 4326)
-
-sf_use_s2(FALSE)
-countries <- st_crop(countries, xmin = -100, xmax = -45, ymin = 15, ymax = 70)
-sf_use_s2(TRUE)
-
-data(pie_crab)
-
-crab_site_data <- pie_crab %>% 
-  mutate(longitude = case_when(
-    latitude == 30.0 ~ -81.3,
-    latitude == 31.4 ~ -81.4,
-    latitude == 33.3 ~ -79.2,
-    latitude == 34.0 ~ -77.9,
-    latitude == 34.7 ~ -76.9,
-    latitude == 37.2 ~ -75.9,
-    latitude == 39.1 ~ -75.4,
-    latitude == 39.6 ~ -74.3,
-    latitude == 41.3 ~ -72.0,
-    latitude == 41.6 ~ -71.3,
-    latitude == 41.9 ~ -70.1,
-    latitude == 42.2 ~ -70.9,
-    latitude == 42.7 ~ 70.8
-  ))
-
-crab_sites <- crab_site_data %>% 
-  group_by(site) %>% 
-  summarise(latitude = mean(latitude),
-            longitude = mean(longitude),
-            mean_size = mean(size))
-
-sites_sf_adj <- st_as_sf(crab_sites, coords = c("longitude", "latitude"), crs = 4326)
-```
-
-```{r}
-#| label: fig-map
-#| message: false
-#| out-width: 100%
-#| fig-cap: "Study area and sampling locations. Approximately 30 male Minuca pugnax fiddler crabs were collected and measured from each of the 13 marshes, locations are indicated with a blue point. Abbreviated site names appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys."
-ggplot() +
-  geom_sf(data = countries) +
-  geom_sf(data = sites_sf_adj, size = 2, shape = 21, fill = "firebrick3", color = "black", stroke = 0.4) +
-  coord_sf(crs = st_crs(32618),
-    xlim = c(-90, -65),
-    ylim = c(25, 45),
-    default_crs = st_crs(4326),
-    expand = FALSE) +
-  geom_sf_text(data = filter(sites_sf_adj, !site %in% c("BC", "CT", "NB")),
-    aes(label = site),
-    size = 4,
-    hjust = 0,
-    colour = "grey20",
-    nudge_x = 0.25,
-    nudge_y = -0.25) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "BC"),
-    aes(label = site),
-    size = 4,
-    colour = "grey20",
-    nudge_x = 1,
-    nudge_y = 0.25) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "CT"),
-    aes(label = site),
-    size = 4,
-    colour = "grey20",
-    nudge_x = 0.5,
-    nudge_y = -0.7) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "NB"),
-    aes(label = site),
-    size = 4,
-    colour = "grey20",
-    nudge_x = 0.9,
-    nudge_y = -0.4) +
-  annotate(geom = "text",
-           x = -71, y = 30,
-           label = "Atlantic Ocean",
-           fontface = "italic",
-           size = 5, colour = "grey20") +
-  annotate(geom = "text",
-           x = -86, y = 27,
-           label = "Gulf of\nMexico",
-           fontface = "italic",
-           size = 3, colour = "grey20") +
-  annotation_scale(width_hint = 0.35, style = "bar", location = "tl") +
-  annotation_north_arrow(location = "br",
-                         height = unit(0.9, "cm"), width = unit(0.6, "cm"),
-                         which_north = "true") +
-  theme_map()
-```
+![Study area and sampling locations. Locations are indicated with a red point. Abbreviated site names appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys.](figures/map1.png){#fig-map1}
 
 
 Here is the raw data, showing 50 rows of the 392 total. We have columns date in the format YYYY-MM-DD, latitude, site (which is an abbreviated sample location), size (which is carapace size in millimeters), air_temp and air_temp_sd (the air temperature and it's standard deviation in Celsius), water_temp and water_temp_df (the water temperature and it's standard deviation), and name (full site name).
@@ -190,7 +91,7 @@ pie_crab %>%
 
 This data set comes with lots of columns! Let's see how we would be able to narrow it down. 
 
-#### Select function
+### Select function
 
 :::{.callout-tip collapse="false"}
 ## Syntax Alert
@@ -221,12 +122,15 @@ subtract_two_nums(3, 1)
 ```
 :::
 
-We can use the `select()` function to create a new data set that only has the desired columns. Test it out below! Pay attention to how the column names inside the `select()` functions changes as you change what columns to include. 
+One of the main variables that will be used to answer our question is "size". But how is crab size determined? Scientists collected crabs at each site (note the abbreviated site names in the column "site" that corresponds to a name in the column "name") and measured the width of their carapace using calipers. The carapace is the main body of the crab. Have a look at the figure below. This photo isn't of a fiddler crab, but it shows how measurements are taken!
 
+![Dungeness crab carapace measurement technique. The same technique applies to fiddler crabs. Photo credit: California Marine Species Portal.](figures/crab_measurement.jpeg){#fig-crabmeasure}
+
+We can use the `select()` function to create a new data set that only has the desired columns. Test it out below! Pay attention to how the column names inside the `select()` functions changes as you change what columns to include. 
 
 ```{r select_function}
 crab_data <- pie_crab %>%
-  slice(round(seq(1, n(), length.out = 15))) %>% 
+  slice(round(seq(1, n(), length.out = 100))) %>% 
   select(!name)
 
 col_options <- c("none", names(crab_data))
@@ -300,21 +204,21 @@ match = rows.find(d => d.col1 === col1 && d.col2 === col2 && d.col3 === col3)
 ```
 
 :::{.callout-note}
-The output only shows the first 15 rows of the resulting data, but in reality, there is 392 rows in the full data set!
+This example only shows 100 rows of data, but there are 392 in the full dataset.
 :::
 
-#### Filter function
+### Filter function
 
-Another important function from the `dplyr` package is `filter()`. This function only keeps rows that meet certain conditions. Try it out below. Pay attention to how sites and carapace size are excluded based on the conditions specified in the code. Note that I have selected only the date, site, latitude, size, and air_temp columns for the before data set, to help it fit onto the page.
+Another important function from the `dplyr` package is `filter()`. This function only keeps rows that meet certain conditions. Try it out below. Pay attention to how sites and carapace size are excluded based on the conditions specified in the code.
 
 ```{r filter_func}
 crab_data <- pie_crab %>% 
-  slice(round(seq(1, n(), length.out = 20))) %>% 
+  slice(round(seq(1, n(), length.out = 100))) %>% 
   mutate(row = row_number(), .before = 1) %>% 
   select(!name)
 
 site_options_filt <- c("any", sort(unique(as.character(crab_data$site))))
-size_options_filt <- seq(7, 20, 1)
+size_options_filt <- seq(0, 20, 2)
 
 choices_filt <- expand.grid(
   site = site_options_filt,
@@ -356,7 +260,7 @@ viewof site_filt = Inputs.select(site_options_filt, {label: "Site"})
 
 ```{ojs filter_func_input2}
 viewof min_size_filt = Inputs.range([d3.min(size_options_filt), d3.max(size_options_filt)], 
-{label: "Minimum size", step: 1, value: d3.min(site_options_filt)})
+{label: "Minimum size", step: 2, value: d3.min(size_options_filt)})
 ```
 
 ```{ojs filter_func_input3}
@@ -388,14 +292,25 @@ match_filt = rows_filt.find(d => d.site === site_filt && d.size === min_size_fil
 ```
 
 :::{.callout-note}
-The output is only showing how the `filter()` function changes the output using only the first 15 rows of data as input.
+The output is only showing how the `filter()` function changes the output using only 100 rows of data as input.
 :::
 
-For our final analysis, we will want to keep all of our crab observations, so there is no use for the `filter()` function. However, there are other situations in data analysis where it could be beneficial. For example, we could use the `filter()` function to see if there are trends in crab carapace size at a single sampling site. See an example of this, combined with the `summarise()` function below.  
+For our final analysis, we will want to keep all of our crab observations, so there is no use for the `filter()` function. However, there are other situations in data analysis where it could be beneficial. For example, we could use the `filter()` function to see if there are trends in crab carapace size within a single sampling site. See an example of this, combined with the `summarise()` function below.  
 
-#### Summarise function
+### Summarise function
 
 To better understand the `summarise()` function, we will filter the data to a specific site and calculate some summary statistics about that site.
+
+::: {.callout-note}
+Summary statistics are numerical measures that condense large data sets into a few key values.
+
+Here, we will look at four summary statistics.  
+
+- **Mean**: the average of all values in a data set. 
+- **Median**: the middle value when data are sorted in ascending order.
+- **Standard Deviation (sd)**: the typical distance of data points from the mean.
+- **Interquartile Range (iqr)**: the width of the middle 50% of the data.
+:::
 
 ```{r filter-summ_func}
 crab_data <- pie_crab %>%
@@ -602,18 +517,18 @@ match_gsum = rows_gsum.find(d => d.group === group_gsum && d.stats === stats_gsu
 
 We can see that using the group_by() function is important to see the trend across the sampling sites. Without it, the parameters are summarised across ALL the data, and we can't compare the different sites to each other. 
 
-### Plotting Our Data
+## Plotting Our Data
 
 However, summary statistics only give us a numerical was of seeing the trends. An easy way to quickly see trends in data is to use plotting. Creating plots allows for readers to quickly understand the relationships between variables, without having to compute or sort parameters.
 
 Here we will use the `ggplot2` package to visualize the raw data and site means. 
 
-#### Geoms: point and jitter
+### Geoms: point and jitter
 `geom_point()` draws one dot per row of your data and places points exactly on their appropriate x and y coordinate, such that if points overlap, you can only see the top one.
 
 `geom_jitter()` on the other hand, considers the overlapping of points. Using this function instead of geom_point() will place points slightly offset of one another so that individual points are more easily visualized.
 
-#### Smooth lines
+### Smooth lines
 `geom_smooth()` is a function for ggplots that fits a trend line and confidence band to your data.
 
 There are many available methods that `geom_smooth()` can use to fit a line to your data, but the most commonly used ones are "lm", "loess", and "gam".
@@ -624,7 +539,7 @@ The "loess" option is the default for `geom_smooth()`, so if you don't specify a
 
 The "gam" option is best for large data sets (>1,000 observations), which fits a smooth spline. 
 
-#### Themes
+### Themes
 But what's the point of making a plot if you can't make it pretty! In `ggplot2` there are nine built-in themes that control the non-data display elements of your figure. These nine themes are:
 
 - `theme_grey()`
@@ -637,7 +552,7 @@ But what's the point of making a plot if you can't make it pretty! In `ggplot2` 
 - `theme_void()`
 - `theme_test()`
 
-#### Putting it all together
+### Putting it all together
 
 Since our examples before did not create a new named object, I am going to start with the `select()` and `summarise()` functions to summarise the data, so that I can use these data in my figure. 
 
@@ -742,10 +657,17 @@ plot_choices$code <- mapply(make_code_plot,
                        plot_choices$themes,
                        USE.NAMES = FALSE)
 
-plot_choices$image <- vapply(plot_choices$code, function(code) {
-  plot_to_uri(eval(parse(text = code)))
-  },
-  character(1), USE.NAMES = FALSE)
+dir.create("plots", showWarnings = FALSE)
+
+plot_choices$image <- paste0("plots/", plot_choices$data_geom, "_",
+                             plot_choices$smooths, "_", plot_choices$themes, ".png")
+
+for (i in seq_len(nrow(plot_choices))) {
+  if (!file.exists(plot_choices$image[i])) {      # only builds missing plots
+    p <- eval(parse(text = plot_choices$code[i]))
+    ggsave(plot_choices$image[i], p, width = 5, height = 3.5, dpi = 150)
+    }
+  }
 
 ojs_define(plot_choices = plot_choices,
            geom_options = data_geom, 
@@ -814,7 +736,7 @@ Note how `geom_point(crab_summary, ...)` was replaced with `stat_summary(fun = m
 
 Now that you have created a plot, we can see that body size does indeed increase with latitude. This shows that the data follows the predictions posed by Bergmann's Rule.
 
-### Conclusion
+## Conclusion
 
 You also now know how to conduct a simple analysis using the `dplyr` and `ggplot2` functions. The beauty of `tidyverse` packages in R is that they follow an English type grammar structure, so instead of thinking purely in code, you can think about what you want to do to your data and translate that into functions. 
 
@@ -822,69 +744,7 @@ A full workflow for this kind of analysis is shared [here](full_workflow.qmd)
 
 We can plot our mean sizes alongside the site label on our map to see that as we go further north, crabs generally become larger.
 
-```{r}
-#| label: fig-map2
-#| message: false
-#| out-width: 100%
-#| fig-cap: "Study area and sampling locations. Approximately 30 male Minuca pugnax fiddler crabs were collected and measured from each of the 13 marshes, locations are indicated with a blue point. Abbreviated site names and mean carapace size (mm) appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys."
-sites_sf_adj <- sites_sf_adj %>% 
-  mutate(site_label = paste0(site, ": ", round(mean_size, 1)))
 
-ggplot() +
-  geom_sf(data = countries) +
-  geom_sf(data = sites_sf_adj, aes(fill = mean_size), size = 2, shape = 21, stroke = 0.4) +
-  scale_fill_viridis_c(option = "magma") +
-  coord_sf(crs = st_crs(32618),
-    xlim = c(-90, -65),
-    ylim = c(25, 45),
-    default_crs = st_crs(4326),
-    expand = FALSE) +
-  geom_sf_text(data = filter(sites_sf_adj, !site %in% c("BC", "CT", "NB", "DB")),
-    aes(label = site_label),
-    size = 4,
-    hjust = 0,
-    colour = "grey20",
-    nudge_x = 0.5,
-    nudge_y = 0) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "BC"),
-    aes(label = site_label),
-    size = 4,
-    colour = "grey20",
-    nudge_x = 2.25,
-    nudge_y = 0.5) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "CT"),
-    aes(label = site_label),
-    size = 4,
-    colour = "grey20",
-    nudge_x = 0.5,
-    nudge_y = -0.7) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "NB"),
-    aes(label = site_label),
-    size = 4,
-    colour = "grey20",
-    nudge_x = 2.25,
-    nudge_y = -0.4) +
-  geom_sf_text(data = filter(sites_sf_adj, site == "DB"),
-    aes(label = site_label),
-    size = 4,
-    hjust = 0,
-    colour = "grey20",
-    nudge_x = 0.5,
-    nudge_y = -0.5) +
-  annotate(geom = "text",
-           x = -71, y = 30,
-           label = "Atlantic Ocean",
-           fontface = "italic",
-           size = 5, colour = "grey20") +
-  annotate(geom = "text",
-           x = -86, y = 27,
-           label = "Gulf of\nMexico",
-           fontface = "italic",
-           size = 3, colour = "grey20") +
-  annotation_scale(width_hint = 0.35, style = "bar", location = "tl") +
-  annotation_north_arrow(location = "br",
-                         height = unit(0.9, "cm"), width = unit(0.6, "cm"),
-                         which_north = "true") +
-  theme_map()
-```
+![Study area and sampling locations. Location points are coloured by mean carapace size of the sampled crabs. Abbreviated site names and mean carapace size (mm) appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys.](figures/map2.png){#fig-map2}
+
 
