@@ -1,5 +1,5 @@
 ---
-title: "Fiddlilng with Data"
+title: "Fiddling with Data"
 execute:
   echo: false
   freeze: auto
@@ -69,7 +69,7 @@ Our data comes from 13 different marshes along the east coast of the United Stat
 ![Study area and sampling locations. Locations are indicated with a red point. Abbreviated site names appear beside each location. Water and air temperature data was collected from monitoring programs, nearby weather stations, and ocean buoys.](figures/map1.png){#fig-map1}
 
 
-Here is the raw data, showing 50 rows of the 392 total. We have columns date in the format YYYY-MM-DD, latitude, site (which is an abbreviated sample location), size (which is carapace size in millimeters), air_temp and air_temp_sd (the air temperature and it's standard deviation in Celsius), water_temp and water_temp_df (the water temperature and it's standard deviation), and name (full site name).
+Here is the raw data, showing 50 rows of the 392 total. We have columns **date** in the format YYYY-MM-DD, **latitude**, **site** (which is an abbreviated sample location), **size** (which is carapace size in millimeters), **air_temp** and **air_temp_sd** (the air temperature and it's standard deviation in Celsius), **water_temp** and **water_temp_sd** (the water temperature and it's standard deviation, also in Celsius), and **name** (full site name).
 
 :::{.callout-tip collapse="false"}
 ## Syntax Alert
@@ -93,7 +93,7 @@ This data set comes with lots of columns! Let's see how we would be able to narr
 
 ### Select function
 
-:::{.callout-tip collapse="false"}
+:::{.callout-tip collapse="true"}
 ## Syntax Alert
 Functions in R are reusable blocks of code that accept inputs (arguments), perform operations (body) and return an output.\ 
 
@@ -122,7 +122,7 @@ subtract_two_nums(3, 1)
 ```
 :::
 
-One of the main variables that will be used to answer our question is "size". But how is crab size determined? Scientists collected crabs at each site (note the abbreviated site names in the column "site" that corresponds to a name in the column "name") and measured the width of their carapace using calipers. The carapace is the main body of the crab. Have a look at the figure below. This photo isn't of a fiddler crab, but it shows how measurements are taken!
+One of the main variables that will be used to answer our question is "size". But how is crab size determined? Scientists collected crabs at each site (note the abbreviated site names in the column "site" that corresponds to a name in the column "name") and measured the width of their body (called the *carapace*) using calipers. Have a look at the figure below. This photo isn't of a fiddler crab, but it shows how measurements are taken!
 
 ![Dungeness crab carapace measurement technique. The same technique applies to fiddler crabs. Photo credit: California Marine Species Portal.](figures/crab_measurement.jpeg){#fig-crabmeasure}
 
@@ -209,7 +209,7 @@ This example only shows 100 rows of data, but there are 392 in the full dataset.
 
 ### Filter function
 
-Another important function from the `dplyr` package is `filter()`. This function only keeps rows that meet certain conditions. Try it out below. Pay attention to how sites and carapace size are excluded based on the conditions specified in the code.
+Another important function `filter()`. This function keeps only rows that meet certain conditions. Try it out below. Pay attention to how sites and carapace size are excluded based on the conditions specified in the code.
 
 ```{r filter_func}
 crab_data <- pie_crab %>% 
@@ -292,7 +292,7 @@ match_filt = rows_filt.find(d => d.site === site_filt && d.size === min_size_fil
 ```
 
 :::{.callout-note}
-The output is only showing how the `filter()` function changes the output using only 100 rows of data as input.
+The "after" table is only showing how the `filter()` function changes the "before" table using only 100 rows of the total data set, which actually has 392 rows.
 :::
 
 For our final analysis, we will want to keep all of our crab observations, so there is no use for the `filter()` function. However, there are other situations in data analysis where it could be beneficial. For example, we could use the `filter()` function to see if there are trends in crab carapace size within a single sampling site. See an example of this, combined with the `summarise()` function below.  
@@ -517,7 +517,7 @@ match_gsum = rows_gsum.find(d => d.group === group_gsum && d.stats === stats_gsu
 
 We can see that using the group_by() function is important to see the trend across the sampling sites. Without it, the parameters are summarised across ALL the data, and we can't compare the different sites to each other. 
 
-## Plotting Our Data
+## Plotting the Data
 
 However, summary statistics only give us a numerical was of seeing the trends. An easy way to quickly see trends in data is to use plotting. Creating plots allows for readers to quickly understand the relationships between variables, without having to compute or sort parameters.
 
@@ -570,29 +570,9 @@ crab_summary <- crab_data %>%
 
 After creating this summary data, I can use both the original and summary data sets to create a beautiful plot. 
 
-```{r}
-#| label: fig-plot1
-#| fig-cap: "Fiddler crab carapace size (mm) in relation to latitude. Light grey points represent individual observations, while black larger points show mean values for sample sites. Smooth shows positive relationship between carapace size and latitude."
-crab_summary <- crab_data %>% 
-  select(site, size, latitude) %>% 
-  group_by(site) %>% 
-  summarise(mean_size = mean(size), 
-            latitude = unique(latitude),
-            sd_size = sd(size)) 
+![Fiddler crab carapace size (mm) in relation to latitude. Light grey points represent individual observations, while black larger points show mean values for sample sites. Smooth shows positive relationship between carapace size and latitude.](figures/scatter.png){#fig-scatter}
 
-ggplot(data = crab_data, 
-       aes(x = latitude, y = size)) + 
-  geom_jitter(color = "grey50", alpha = 0.5) + 
-  geom_point(data = crab_summary, 
-             aes(x = latitude, y = mean_size), 
-             color = "grey30", size = 3) + 
-  geom_smooth(formula = y~x, method = "lm",
-              color = "black") +
-  labs(x = "Latitude", y = "Carapace size (mm)") +
-  theme_classic()
-```
-
-Using the dropdowns, see if you can create the code by changing the options with the dropdowns. There is only one combination of dropdowns that will create a plot identical to mine above. 
+Using the dropdowns, see if you can create the code by changing the options to make the lower figure match the figure above. There is only one combination of dropdowns that will make the figures match. 
 
 Pay close attention to which functions and calls change when you select different drop down options.
 
@@ -667,7 +647,11 @@ for (i in seq_len(nrow(plot_choices))) {
     p <- eval(parse(text = plot_choices$code[i]))
     ggsave(plot_choices$image[i], p, width = 5, height = 3.5, dpi = 150)
     }
-  }
+}
+
+plot_choices$correct <- plot_choices$data_geom == "jitter" &
+  plot_choices$smooths == "lm" &
+  plot_choices$themes == "classic"
 
 ojs_define(plot_choices = plot_choices,
            geom_options = data_geom, 
@@ -692,6 +676,15 @@ viewof theme_sel = Inputs.select(theme_options, {label: "Themes"})
 rows_plot = transpose(plot_choices)
 match_plot = rows_plot.find(d => 
 d.data_geom === geom_sel && d.smooths === smooth_sel && d.themes === theme_sel)
+```
+
+```{ojs}
+{
+  const box = document.createElement("div");
+  box.className = match_plot.correct ? "feedback good" : "feedback";
+  box.textContent = match_plot.correct ? "✓ Good job! That's the figure." : "Keep going…";
+  return box;
+}
 ```
 
 ```{ojs prevent_same_dropdowns}

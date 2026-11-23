@@ -35,5 +35,7 @@ Heiss, A. (2024, April 4). *Visualizing {dplyr}'s mutate(), summarize(), group_b
 Horst, A., Brun, J., Guo, S., Logan, A., Ran, L., Sternberg, S., & Zhao, K. (2023). *lterdatasampler: Educational dataset examples from the Long Term Ecological Research Program* (Version 0.1.1) [R package]. https://doi.org/10.32614/CRAN.package.lterdatasampler
 
 Kosourova, E. (2023, March 6). *How to write functions in R (with 18 code examples)*. Dataquest. https://www.dataquest.io/blog/write-functions-in-r/
+
+Sentance, S., Waite, J., & Kallia, M. (2019). Teaching computer programming with PRIMM: a sociocultural perspective. Computer Science Education, 29(2–3), 136–176. https://doi.org/10.1080/08993408.2019.1608781
 :::
 
