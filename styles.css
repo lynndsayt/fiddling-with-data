@@ -60,7 +60,7 @@
 }
 
 .table-scroll {
-  max-height: 280px;      /* change to taste */
+  max-height: 400px;      /* change to taste */
   overflow: auto;         /* scrolls both ways when needed */
   border: 1px solid #e5e7eb;
   border-radius: 6px;
