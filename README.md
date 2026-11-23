@@ -1,5 +1,4 @@
 # Fiddling with Data
----
 ### About this project
 
 This website was developed as a project towards the requirements of the Graduate Academic Certificate in Science Communication at McMaster University (2026–2027).
@@ -13,8 +12,6 @@ The example data set used throughout the website comes from the `lterdatasampler
 Additional resources that informed the development of the website, including resources on R programming, data visualization, and Quarto website development, are listed below.
 
 ### References
-
-::: {.references}
 
 California Department of Fish and Wildlife. 2023. Dungeness Crab, Metacarcinus magister, Enhanced Status Report.
 
@@ -33,5 +30,4 @@ Horst, A., Brun, J., Guo, S., Logan, A., Ran, L., Sternberg, S., & Zhao, K. (202
 Kosourova, E. (2023, March 6). *How to write functions in R (with 18 code examples)*. Dataquest. https://www.dataquest.io/blog/write-functions-in-r/
 
 Sentance, S., Waite, J., & Kallia, M. (2019). Teaching computer programming with PRIMM: a sociocultural perspective. Computer Science Education, 29(2–3), 136–176. https://doi.org/10.1080/08993408.2019.1608781
-:::
 
